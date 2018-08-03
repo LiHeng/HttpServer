@@ -39,7 +39,7 @@ public class Response implements HttpServletResponse{
         headers = new HashMap<>();
         responseBody = new byte[0];
         headers.put("Date", TimeUtil.toRFC822(ZonedDateTime.now()));
-        headers.put("Server", PropertiesHelper.getProperty("server_name", "HttpServer"));
+        headers.put("Server", "HttpServer");
         headers.put("Connection", "Close"); // TODO keep-alive
     }
 
