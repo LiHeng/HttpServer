@@ -37,7 +37,7 @@ public class Server {
                 break;
             }
             try {
-                if (selector.select() == 0) {
+                if (selector.select(500) == 0) {
                     continue;
                 }
             } catch (IOException e) {

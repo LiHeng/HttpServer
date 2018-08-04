@@ -4,9 +4,12 @@ import liheng.io.httpserver.http.exceptions.IllegalRequestException;
 import liheng.io.httpserver.http.exceptions.ServerInternalException;
 import liheng.io.httpserver.http.request.Request;
 import liheng.io.httpserver.http.request.RequestParser;
+import liheng.io.httpserver.http.response.NotFoundResponse;
 import liheng.io.httpserver.http.response.Response;
 import liheng.io.httpserver.http.response.ServerInternalResponse;
 import liheng.io.httpserver.http.response.Status;
+import liheng.io.httpserver.mvc.ControllerMethodInfo;
+import liheng.io.httpserver.mvc.ControllerScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +38,20 @@ public class Connector implements Runnable {
         try {
             request = RequestParser.parseRequest(channel);
             if (request == null) {
-                //return;
+                return;
             }
-            response = new Response(Status.OK_200);
+            //response = new Response(Status.OK_200);
+            ControllerMethodInfo controllerMethodInfo = ControllerScan.findControllerMethod(request);
+            if (controllerMethodInfo == null) {
+                response = new NotFoundResponse();
+            } else if (!controllerMethodInfo.containHttpMethod(request.getMethod())) {
+                response = new Response(Status.METHOD_NOT_ALLOWED_405);
+            } else {
+                response = (Response) controllerMethodInfo.invoke(request);
+                if (response == null) {
+                    throw new ServerInternalException("controller返回了一个null");
+                }
+            }
         } catch (ServerInternalException e) { // 这个IOException都是parseRequest里出来的
             LOGGER.error("服务器内部错误", e);
             response = new ServerInternalResponse();

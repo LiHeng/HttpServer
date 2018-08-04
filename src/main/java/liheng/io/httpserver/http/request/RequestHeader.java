@@ -25,8 +25,10 @@ public class RequestHeader {
 
     private String queryString;
 
+    //客户端发送的cookie
     private Cookie[] cookies;
 
+    //http协议版本
     private HttpSchema schema;
 
     public Cookie[] getCookies() {

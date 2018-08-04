@@ -56,6 +56,18 @@ public class Request implements HttpServletRequest {
         }
     }
 
+    public Collection<String> queryValue(String key) {
+        return header.queryValue(key);
+    }
+
+    public Collection<String> formValue(String key) {
+        return body.getFormMap().get(key);
+    }
+
+    public MimeData mimeValue(String key) {
+        return body.mimeValue(key);
+    }
+
     @Override
     public String getAuthType() {
         return null;

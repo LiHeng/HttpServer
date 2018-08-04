@@ -85,6 +85,6 @@ public enum HttpHeader {
     }
 
     public String getName() {
-        return name;
+        return name.toLowerCase();
     }
 }

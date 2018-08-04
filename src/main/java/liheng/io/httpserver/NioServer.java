@@ -1,5 +1,7 @@
 package liheng.io.httpserver;
 
+import liheng.io.httpserver.util.BytesUtil;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -128,12 +130,7 @@ public class NioServer {
     }
 
     public static void main(String[] args) {
-        NioServer server = new NioServer("127.0.0.1", 8080);
-        try {
-            server.startListen();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
 }
