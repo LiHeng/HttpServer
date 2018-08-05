@@ -1,5 +1,6 @@
 package liheng.io.httpserver.http.request;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections4.MultiValuedMap;
 
 import java.util.Collection;
@@ -14,6 +15,16 @@ public class RequestBody {
     private MultiValuedMap<String, String> formMap;
 
     private Map<String, MimeData> mimeMap;
+
+    private String requestBody;    // request body for json request
+
+    public String getRequestBody() {
+        return requestBody;
+    }
+
+    public void setRequestBody(String requestBody) {
+        this.requestBody = requestBody;
+    }
 
     public void setFormMap(MultiValuedMap<String, String> formMap) {
         this.formMap = formMap;

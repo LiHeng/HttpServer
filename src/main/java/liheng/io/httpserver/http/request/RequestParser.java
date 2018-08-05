@@ -19,7 +19,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -152,6 +151,7 @@ public class RequestParser {
         String contentType = header.getContentType();
         Map<String, MimeData> mimeMap = Collections.emptyMap(); // 通过 multipart/form-data 方式提交的数据
         MultiValuedMap<String, String> formMap = new ArrayListValuedHashMap<>();
+        String jsonString = null;
         if (contentType.contains("application/x-www-form-urlencoded")) {    //表单提交的参数
             try {
                 String bodyMsg = new String(body, "utf-8");
@@ -162,12 +162,29 @@ public class RequestParser {
             int boundaryValueIndex = contentType.indexOf("boundary=");
             String bouStr = contentType.substring(boundaryValueIndex + 9);  // 9是 `boundary=` 长度
             mimeMap = parseFormData(body, bouStr);
-        } else if (contentType.contains("application/json")){      // json
 
+            // 将mimeMap中的content-type为null类型的值放入formMap
+            try {
+                for (Map.Entry<String,MimeData> entry:mimeMap.entrySet()){
+                    if (entry.getValue().getContentType()==null){
+                        formMap.put(entry.getKey(), new String(entry.getValue().getData(),"utf-8"));
+                    }
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+        } else if (contentType.contains("application/json")){      // json
+            try {
+                jsonString = new String(body, "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
         RequestBody requestBody = new RequestBody();
         requestBody.setFormMap(formMap);
         requestBody.setMimeMap(mimeMap);
+        requestBody.setRequestBody(jsonString);
         return requestBody;
     }
 
@@ -239,11 +256,12 @@ public class RequestParser {
                 fileName = new String(Arrays.copyOfRange(lineOne, leftQuoIndex + 1, rightQuoIndex));
                 int headEndIndex = BytesUtil.indexOf(curBody, "\r\n\r\n", 13);
                 mimeType = headEndIndex == lineEndIndex ? "text/plain" :new String(Arrays.copyOfRange(curBody, lineEndIndex + 16, headEndIndex));
+                curIndex = headEndIndex + 4;
+            }else {
+                curIndex = lineEndIndex + 4;
             }
-            curIndex = lineEndIndex + 4;
 
             data = Arrays.copyOfRange(curBody, curIndex, curBody.length-2); //去掉后面的\r\n
-            //System.err.println(new String(data));
             mimeData.put(name, new MimeData(mimeType, data, fileName));
         }while (endIndex!=lastIndex);
         return mimeData;

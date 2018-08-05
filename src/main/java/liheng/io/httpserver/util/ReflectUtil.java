@@ -31,6 +31,14 @@ public class ReflectUtil {
         TYPE_FUNCTION_MAP.put(Float.class, floatFunction);
         TYPE_FUNCTION_MAP.put(Character.class, charFunction);
         TYPE_FUNCTION_MAP.put(byte[].class, o -> ((MimeData) o).getData());
+
+        TYPE_FUNCTION_MAP.put(boolean.class, boolFunction);
+        TYPE_FUNCTION_MAP.put(long.class, longFunction);
+        TYPE_FUNCTION_MAP.put(int.class, intFunction);
+        TYPE_FUNCTION_MAP.put(double.class, doubleFunction);
+        TYPE_FUNCTION_MAP.put(float.class, floatFunction);
+        TYPE_FUNCTION_MAP.put(char.class, charFunction);
+
         TYPE_FUNCTION_MAP.put(MimeData.class, o -> o);
 
     }
@@ -49,7 +57,7 @@ public class ReflectUtil {
         Object result;
         try {
             result = TYPE_FUNCTION_MAP.getOrDefault(type, MISS_FUNCTION).apply(val);
-            valid(result, type);
+            //valid(result, type);
         } catch (RuntimeException e) {
             throw new TransformTypeException("parseObj error,target type:" + type.getName(), e);
         }

@@ -2,6 +2,7 @@ package liheng.io.httpserver.nio;
 
 import liheng.io.httpserver.context.Context;
 import liheng.io.httpserver.http.response.Response;
+import liheng.io.httpserver.mvc.ControllerScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +94,7 @@ public class Server {
         ServerSocketChannel serverSocketChannel = null;
         try {
             //ServiceRegistry.registerServices();
+            ControllerScan.scanPackage("liheng.io.httpserver.controller");
             serverSocketChannel = ServerSocketChannel.open();
             serverSocketChannel.bind(new InetSocketAddress(Context.getIp(), Context.getPort()));
             serverSocketChannel.configureBlocking(false);

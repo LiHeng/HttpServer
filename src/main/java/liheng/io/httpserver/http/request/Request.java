@@ -56,6 +56,8 @@ public class Request implements HttpServletRequest {
         }
     }
 
+    public String getResponseBody(){return body.getRequestBody();}
+
     public Collection<String> queryValue(String key) {
         return header.queryValue(key);
     }
