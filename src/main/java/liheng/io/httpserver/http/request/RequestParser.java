@@ -177,6 +177,7 @@ public class RequestParser {
         } else if (contentType.contains("application/json")){      // json
             try {
                 jsonString = new String(body, "utf-8");
+
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
