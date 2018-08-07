@@ -87,7 +87,7 @@ public class Request implements HttpServletRequest {
 
     @Override
     public String getHeader(String s) {
-        return null;
+        return header.getHead().get(s);
     }
 
     @Override

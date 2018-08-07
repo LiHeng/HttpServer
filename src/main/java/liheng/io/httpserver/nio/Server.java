@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -25,12 +27,73 @@ public class Server {
 
     private Selector selector;
 
+    private Context context;
+
     public Server() {
 
     }
 
+    /**
+     * 启动服务器
+     * @param args 格式:start [address:port]
+     * @param controllerPackagePaths 扫描controller所在的包
+     * @throws IOException
+     */
+    public void run(String[] args,String... controllerPackagePaths) throws IOException {
+        //初始化
+        init(args,controllerPackagePaths);
+        //启动
+        start();
+    }
+
+    private void init(String[] args,String... controllerPackagePaths) throws UnknownHostException {
+        long start = System.currentTimeMillis();
+
+        //初始化server context，包括ip、port等信息
+        initContext(args);
+        //扫描controller
+        initController(controllerPackagePaths);
+
+        long end = System.currentTimeMillis();
+        LOGGER.info("服务器启动 http:/{}:{}/ 耗时:{}ms", context.getIp().getHostAddress(),
+                context.getPort(), end - start);
+    }
+
+    private void initContext(String[] args) throws UnknownHostException {
+        //parse command line arguments
+        if(args.length < 1 || !args[0].equals("start")){
+            LOGGER.info("Usage: start [address:port]");
+            System.exit(1);
+        }
+
+        InetAddress ip = null;
+        int port = 0;
+
+        if(args.length == 2 && args[1].matches(".+:\\d+")){
+            String[] addressAndPort = args[1].split(":");
+            ip = InetAddress.getByName(addressAndPort[0]);
+            port = Integer.valueOf(addressAndPort[1]);
+        }else{
+            ip = InetAddress.getLocalHost();
+            port = Context.DEFAULT_PORT;
+        }
+
+        Context context = new Context();
+        context.setIp(ip);
+        context.setPort(port);
+        this.context = context;
+    }
+
+    private void initController(String... controllerPackagePaths){
+        for (String packagePath:controllerPackagePaths){
+            ControllerScan.scanPackage(packagePath);
+        }
+    }
+
+
+
     public void start(){
-        if (!init()){
+        if (!initServerSocket()){
             return;
         }
         while (true){
@@ -56,7 +119,7 @@ public class Server {
                         client.configureBlocking(false);
                         client.register(selector, SelectionKey.OP_READ);
                     }else if (key.isWritable()){
-                        LOGGER.info("Writeable");
+                        //LOGGER.info("Writeable");
                         SocketChannel client = (SocketChannel) key.channel();
                         Response response = (Response) key.attachment();
                         ByteBuffer byteBuffer = response.getByteBuffer(); // TODO 考虑修改为获取流
@@ -67,13 +130,13 @@ public class Server {
                             key.cancel();
                             client.close();
                         }
-                        LOGGER.info("write end");
+                        //LOGGER.info("write end");
                     }else if (key.isReadable()) {
-                        LOGGER.info("Readable");
+                        //LOGGER.info("Readable");
                         SocketChannel client = (SocketChannel) key.channel();
                         ThreadPool.execute(new Connector(client, selector));
                         key.interestOps(key.interestOps() & ~SelectionKey.OP_READ);
-                        LOGGER.info("After Read");
+                        //LOGGER.info("After Read");
                     }
                     iterator.remove();
                 } catch (IOException e) {
@@ -89,18 +152,14 @@ public class Server {
         }
     }
 
-    private boolean init(){
-        long start = System.currentTimeMillis();
+    private boolean initServerSocket(){
         ServerSocketChannel serverSocketChannel = null;
         try {
-            //ServiceRegistry.registerServices();
-            ControllerScan.scanPackage("liheng.io.httpserver.controller");
             serverSocketChannel = ServerSocketChannel.open();
-            serverSocketChannel.bind(new InetSocketAddress(Context.getIp(), Context.getPort()));
+            serverSocketChannel.bind(new InetSocketAddress(context.getIp(), context.getPort()));
             serverSocketChannel.configureBlocking(false);
             selector = Selector.open();
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            LOGGER.info("服务器启动 http://{}:{}/ ,耗时{}ms", Context.getIp().getHostAddress(), Context.getPort(), System.currentTimeMillis() - start);
             return true;
         } catch (IOException e) {
             LOGGER.error("初始化错误", e);
@@ -123,9 +182,9 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) {
-        Context.init(new String[]{"start","8080"});
-        new Server().start();
+    public static void main(String[] args) throws IOException {
+        //Context.init(new String[]{"start","8080"});
+        new Server().run(args,"liheng.io.httpserver.controller");
     }
 
 

@@ -77,7 +77,7 @@ public class RequestParser {
             String path = URLDecoder.decode(requestLine[1], "utf-8");
             String method = requestLine[0];
             HttpSchema scheme = HttpSchema.parseScheme(requestLine[2]);
-            while ((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {            //解析header里面的key-value
                 String[] keyValue = line.split(":", 2);
                 headMap.put(keyValue[0].trim().toLowerCase(), keyValue[1].trim());
             }
