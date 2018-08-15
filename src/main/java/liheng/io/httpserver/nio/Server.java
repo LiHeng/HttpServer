@@ -126,6 +126,7 @@ public class Server {
                         if (byteBuffer.hasRemaining()) {
                             client.write(byteBuffer);
                         }
+                        //可能没有写完
                         if (!byteBuffer.hasRemaining()) {
                             key.cancel();
                             client.close();

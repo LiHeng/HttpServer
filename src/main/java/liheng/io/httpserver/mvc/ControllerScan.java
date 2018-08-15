@@ -15,11 +15,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ControllerScan {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ControllerScan.class);
-    private static Map<String, ControllerMethodInfo> controllerMethodMap = Collections.synchronizedMap(new TreeMap<String, ControllerMethodInfo>());
+    private static Map<String, ControllerMethodInfo> controllerMethodMap = new ConcurrentHashMap<>();
 
 
     public static void scanPackage(String pkgName) {

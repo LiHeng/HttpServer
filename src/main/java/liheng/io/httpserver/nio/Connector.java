@@ -36,6 +36,7 @@ public class Connector implements Runnable {
         Request request = null;
         Response response = null;
         try {
+            // 读取channel里面的信息，构造http request
             request = RequestParser.parseRequest(channel);
             if (request == null) {
                 return;
